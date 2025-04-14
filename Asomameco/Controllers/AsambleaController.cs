@@ -14,6 +14,7 @@ using SkiaSharp;
 using Org.BouncyCastle.Cmp;
 using Asomameco.Web.Models;
 using Microsoft.IdentityModel.Tokens;
+using System.Linq;
 
 namespace Asomameco.Web.Controllers
 {
@@ -86,6 +87,7 @@ namespace Asomameco.Web.Controllers
         {
             var consecutivo = await context.Asamblea.OrderByDescending(x => x.Id).FirstOrDefaultAsync();
             ViewBag.id = consecutivo?.Id + 1 ?? 1;
+            ViewBag.Usuarios = await context.Usuario.ToListAsync();
 
             // Obtener todos lugares
             var allLugares = await _serviceLugar.ListAsync();
@@ -123,8 +125,14 @@ namespace Asomameco.Web.Controllers
             var hoy = DateTime.Now.Date; // Obtener la fecha de hoy sin la hora
             var asambleas =  await _serviceAsamblea.ListAsync();
             var asambleasFiltradas = asambleas?
-         .Where(asa => asa.Estado == 1 && asa.Fecha.Date == hoy)
-         .ToList();
+                .Where(asa => asa.Estado == 1)  // Filtrar por Estado = 1
+                .OrderBy(asa => asa.Fecha)       // Ordenar de más vieja a más reciente
+                .Select(asa => new
+                {
+                    asa.Id,
+                    Fecha = asa.Fecha.ToString("dd/MMMM/yyyy HH:mm") // Convertir Fecha a string
+                })
+                .ToList();
 
             // Asignar los tipos de usuario filtrados al ViewBag
             ViewBag.ListAsamblea = asambleasFiltradas;
@@ -226,8 +234,7 @@ namespace Asomameco.Web.Controllers
         [Authorize]
         // POST: AsambleaController/Create
         [HttpPost]
-
-        public async Task<ActionResult> Create(AsambleaDTO dto)
+        public async Task<ActionResult> Create(AsambleaDTO dto, List<string> selectedUsers)
         {
 
             try
@@ -240,11 +247,13 @@ namespace Asomameco.Web.Controllers
                     // Lee del ModelState todos los errores que
                     // vienen para el lado del server
                     string errors = string.Join("; ", ModelState.Values
-                                       .SelectMany(x => x.Errors)
-                                       .Select(x => x.ErrorMessage));
+                                   .SelectMany(x => x.Errors)
+                                   .Select(x => x.ErrorMessage));
                     ViewBag.ErrorMessage = errors;
                     return View();
                 }
+
+          
 
                 dto.Estado = 1;
                 if (dto.Descripcion.IsNullOrEmpty())
@@ -252,46 +261,54 @@ namespace Asomameco.Web.Controllers
                     dto.Descripcion = "";
                 }
 
-                //Crear
+                // Crear asamblea
                 await _serviceAsamblea.AddAsync(dto);
 
-
-                //Enviar correo de notificacion a todos los usuarios de que hay una nueva asamblea creada
-                var usuarios = context.Usuario.ToList();
+                // Obtener lugar
                 var lugar = await context.Lugar.FindAsync(dto.Lugar);
 
-                foreach (var usuario in usuarios)
-                {
+                var selectedUserIds = selectedUsers?.Select(int.Parse).ToList() ?? new List<int>();
 
-                    string urlConfirmacion = $"https://localhost:7282/Asamblea/Confirmar?id={usuario.Id}&idAsamblea={dto.Id}";
+                // Si no se seleccionaron usuarios específicos, enviar a todos
+                var usuarios = selectedUserIds.Any()
+                   ? await context.Usuario.Where(u => selectedUserIds.Contains(u.Id)).ToListAsync()
+                   : await context.Usuario.ToListAsync();
+
+                if (selectedUserIds != null)
+                {
+                    foreach (var usuario in usuarios)
+                    {
+
+                        string urlConfirmacion = $"https://localhost:7282/Asamblea/Confirmar?id={usuario.Id}&idAsamblea={dto.Id}";
 
                   
 
-                    string mensaje = $@"
-            <h2>Notificación de Asamblea</h2>
-            <p>Se ha programado una nueva asamblea para el <strong>{dto.Fecha.ToShortDateString()}
-            </strong> a las <strong>{dto.Fecha.Hour}</strong>:<strong>{dto.Fecha.Minute}</strong>.</p>
-            <p><strong>{dto.Descripcion}</strong></p>
-            <p>Lugar asignado: <strong>{lugar.NombreLugar}</strong></p>
-            <p>Direcci&oacute;n: <strong>{lugar.DireccionExacta}</strong></p> </p>
-            <p>Por favor, confirma tu asistencia haciendo clic en el botón de abajo:</p>
-            <a href='{urlConfirmacion}' 
-                style='background-color: #28a745; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px;'>
-                Sí, Confirmo
-            </a>
-            <p>Si no puedes asistir, no es necesario hacer nada.</p>";
+                        string mensaje = $@"
+                <h2>Notificación de Asamblea</h2>
+                <p>Se ha programado una nueva asamblea para el <strong>{dto.Fecha.ToShortDateString()}
+                </strong> a las <strong>{dto.Fecha.Hour}</strong>:<strong>{dto.Fecha.Minute}</strong>.</p>
+                <p><strong>{dto.Descripcion}</strong></p>
+                <p>Lugar asignado: <strong>{lugar.NombreLugar}</strong></p>
+                <p>Dirección: <strong>{lugar.DireccionExacta}</strong></p> </p>
+                <p>Por favor, confirma tu asistencia haciendo clic en el botón de abajo:</p>
+                <a href='{urlConfirmacion}' 
+                    style='background-color: #28a745; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px;'>
+                    Sí, Confirmo
+                </a>
+                <p>Si no puedes asistir, no es necesario hacer nada.</p>";
 
-                    await _emailService.EnviarCorreoAsync(usuario.Correo, "Confirmación de Asamblea", mensaje);
-
-
+                        await _emailService.EnviarCorreoAsync(usuario.Correo, "Confirmación de Asamblea", mensaje);
+                    }
+                }
+                else {
 
                 }
-                return RedirectToAction("IndexAdmin");
+                    return RedirectToAction("IndexAdmin");
             }
             catch (Exception ex)
             {
                 var innerException = ex.InnerException?.Message ?? ex.Message;
-                ViewBag.ErrorMessage = $"Error al guardar el Asamblea: {innerException}";  
+                ViewBag.ErrorMessage = $"Error al guardar el Asamblea: {innerException}";
                 return View(dto);
             }
         }

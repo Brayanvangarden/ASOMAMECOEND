@@ -37,7 +37,7 @@ namespace Asomameco.Application.DTOs
 
         public int Lugar { get; set; }
 
-
+        [ValidateNever]
         public virtual ICollection<Asistencia> Asistencia { get; set; } = new List<Asistencia>();
         [ValidateNever]
         public virtual EstadoAsambleaDTO EstadoNavigation { get; set; } = null!;

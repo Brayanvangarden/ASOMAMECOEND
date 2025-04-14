@@ -246,7 +246,7 @@ namespace Asomameco.Controllers
             return RedirectToAction("RecuperarContraseña");
 
         }
-        
+
 
         private string GenerarContraseñaTemporal()
         {

@@ -48,7 +48,7 @@ namespace Asomameco.Infraestructure.Repository.Implementations
 
         public async Task<int> AddAsync(Asamblea entity)
         {
-         
+
 
           
 

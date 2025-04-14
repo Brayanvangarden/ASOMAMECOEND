@@ -12,7 +12,6 @@ namespace Asomameco.Application.Services.Interfaces
     {
        Task<ICollection<AsambleaDTO>> ListAsync();
         Task<AsambleaDTO> FindByIdAsync(int id); 
-     
 
         Task<int> ConfirmAttendance(AsistenciaDTO confirmacion);
         Task<int> Confirmation(ConfirmacionDTO confirmacion);
