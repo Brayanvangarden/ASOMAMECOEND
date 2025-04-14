@@ -51,13 +51,6 @@ namespace Asomameco.Application.Services.Implementations
                 .AnyAsync(c => c.IdMiembro == idMiembro && c.IdAsamblea == idAsamblea);
         }
 
-        public async Task UpdateAsync(int id, AsambleaDTO dto)
-        {
-            var @object = await _repository.FindByIdAsync(id);
-            var entity = _mapper.Map(dto, @object!);
-
-            await _repository.UpdateAsync(id, entity);
-        }
         public async Task<AsambleaDTO> FindByIdAsync(int id)
         {
             var @object = await _repository.FindByIdAsync(id);
@@ -73,12 +66,6 @@ namespace Asomameco.Application.Services.Implementations
             return collection;
         }
 
-
-        public async Task<int> AddAsync(AsambleaDTO dto)
-        {
-            var objectMapped = _mapper.Map<Asamblea>(dto);
-            return await _repository.AddAsync(objectMapped);
-        }
 
         public async Task UpdateAsync(int id, AsambleaDTO dto)
         {
