@@ -1,0 +1,24 @@
+﻿@{
+    ViewData["Title"] = "Cuenta Desactivada";
+}
+<div style="margin-top:20%">   </div>
+<div class="container mt-5" style="margin-bottom:32%">
+    <div class="card shadow-lg border-0">
+        <div class="card-header text-white text-center" style="background-color: #07305d;">
+            <h3><i class="fas fa-user-slash me-2"></i> Cuenta Desactivada</h3>
+        </div>
+        <div class="card-body text-center">
+            <p class="fs-5">
+                Tu cuenta ha sido desactivada. Si crees que esto es un error, por favor contacta a la administración para más información.
+            </p>
+            <div class="mt-4">
+                <a asp-action="Login" asp-controller="Account" class="btn btn-primary me-3" style="background-color:#0b488c;border-color:white;">
+                    <i class="fas fa-sign-in-alt me-1"></i> Volver al Inicio de sesión
+                </a>
+                <a asp-action="Index" asp-controller="Home" class="btn btn-secondary" style="background-color:#e4872c;border-color:white;">
+                    <i class="fas fa-home me-1"></i> Ir al Menú Principal
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

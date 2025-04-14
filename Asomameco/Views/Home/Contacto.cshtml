@@ -1,0 +1,103 @@
+﻿@{
+    ViewData["Title"] = "Contacto";
+}
+
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 100vh;">
+    <div class="row shadow-lg p-5 rounded" style="width: 800px; background-color: white;">
+        <!-- Columna izquierda: Información de Contacto -->
+        <div class="col-md-6 d-flex flex-column justify-content-center">
+            <h2 class="mb-4" style="color: #07305d; font-weight: bold;">Contáctanos</h2>
+            <p style="font-size: 1.1rem; color: #555;">
+                En ASOMAMECO estamos aquí para ti. Puedes comunicarte a través de los siguientes medios:
+            </p>
+            <p style="font-size: 1.2rem;">
+                <i class="fas fa-phone" style="color: #e4872c;"></i> +506 2274-8422
+            </p>
+            <p style="font-size: 1.0rem;">
+                <i class="fas fa-envelope" style="color: #e4872c;"></i>
+                <a href="mailto:asociacionmaridosamecatecorto.com" style="color: #07305d; text-decoration: none;">
+                    asociacionmaridosamecatecorto.com
+                </a>
+            </p>
+            <div class="mt-4">
+                <h4 style="color: #07305d;">¿Dónde encontrarnos?</h4>
+                <p style="font-size: 0.95rem; color: #555;">
+                    Alajuela, Villabonita, 1km al Sur de Construplaza.
+                </p>
+           
+            </div>
+        </div>
+
+        <!-- Divisor vertical -->
+        <div class="col-md-1 d-flex align-items-center justify-content-center">
+            <div style="width: 1px; height: 100%; background-color: #e4872c;"></div>
+        </div>
+
+        <!-- Columna derecha: Formulario de Consulta -->
+        <div class="col-md-5">
+            <h2 class="mb-4 text-center" style="color: #07305d; font-weight: bold;">Consulta</h2>
+            <form asp-action="EnviarConsulta" method="post">
+                <!-- Campo Nombre y Apellidos -->
+                <div class="mb-3">
+                    <label for="name" class="form-label">Nombre y Apellidos</label>
+                    <div class="input-group">
+                        <span class="input-group-text" style="background-color: #e4872c; color: white;">
+                            <i class="fas fa-user"></i>
+                        </span>
+                        <input type="text" class="form-control" id="name" name="name" required />
+                    </div>
+                </div>
+                <!-- Campo Email -->
+                <div class="mb-3">
+                    <label for="email" class="form-label">Email</label>
+                    <div class="input-group">
+                        <span class="input-group-text" style="background-color: #e4872c; color: white;">
+                            <i class="fas fa-envelope"></i>
+                        </span>
+                        <input type="email" class="form-control" id="email" name="email" required />
+                    </div>
+                </div>
+                <!-- Campo Asunto -->
+                <div class="mb-3">
+                    <label for="subject" class="form-label">Asunto</label>
+                    <div class="input-group">
+                        <span class="input-group-text" style="background-color: #e4872c; color: white;">
+                            <i class="fas fa-info-circle"></i>
+                        </span>
+                        <input type="text" class="form-control" id="subject" name="subject" required />
+                    </div>
+                </div>
+                <!-- Campo Mensaje -->
+                <div class="mb-3">
+                    <label for="message" class="form-label">Mensaje</label>
+                    <textarea class="form-control" id="message" name="message" rows="4" required style="border: 2px solid #e4872c;"></textarea>
+                </div>
+                <!-- Botón Enviar -->
+                <button type="submit" class="btn-contact" style="width: 100%;">Enviar Consulta</button>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control {
+        border: 2px solid #e4872c;
+    }
+
+    .btn-contact {
+        background-color: #07305d;
+        color: white;
+        padding: 12px;
+        border: none;
+        border-radius: 30px;
+        cursor: pointer;
+        font-size: 18px;
+        font-weight: bold;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
+        .btn-contact:hover {
+            background-color: #0b488c;
+            transform: scale(1.05);
+        }
+</style>

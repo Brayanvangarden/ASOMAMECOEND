@@ -1,0 +1,105 @@
+﻿@{
+    ViewData["Title"] = "Inicio de Sesión";
+}
+
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 100vh;">
+    <div class="row shadow-lg p-5 rounded" style="width: 800px; background-color: white;">
+        <!-- Columna izquierda: Logo -->
+        <div class="col-md-6 d-flex flex-column align-items-center justify-content-center">
+            <img src="~/images/Logo.jpg" alt="Logo" class="img-fluid" style="max-width: 250px;" />
+        </div>
+
+        <!-- Divisor vertical -->
+        <div class="col-md-1 d-flex align-items-center justify-content-center">
+            <div style="width: 1px; height: 100%; background-color: #e4872c;"></div>
+        </div>
+
+        <!-- Columna derecha: Formulario de inicio de sesión -->
+        <div class="col-md-5">
+            <h2 class="mb-4 text-center" style="color: #07305d; font-weight: bold;">Inicio de Sesión</h2>
+            <form asp-action="Login" method="post">
+                <!-- Campo Usuario -->
+                <div class="form-group mb-3">
+                    <label for="username" class="form-label">Usuario</label>
+                    <div class="input-group">
+                        <span class="input-group-text" style="background-color: #e4872c; color: white;">
+                            <i class="fas fa-user"></i>
+                        </span>
+                        <input type="text" class="form-control" id="username" name="username" required />
+                    </div>
+                </div>
+
+                <!-- Campo Contraseña -->
+                <div class="form-group mb-4">
+                    <label for="password" class="form-label">Contraseña</label>
+                    <div class="input-group">
+                        <span class="input-group-text" style="background-color: #e4872c; color: white;">
+                            <i class="fas fa-lock"></i>
+                        </span>
+                        <input type="password" class="form-control" id="password" name="password" required />
+                        <button type="button" class="btn btn-outline-secondary" id="togglePassword">
+                            <i class="fas fa-eye"></i>
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <a asp-controller="Account" asp-action="RecuperarContraseña" style="text-decoration: none; color: #0b488c; font-weight: bold;">¿Olvidó su contraseña?</a>
+                </div>
+
+                <button type="submit" class="btn-login">Iniciar sesión</button>
+            </form>
+
+            @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+            {
+                <div class="alert alert-danger mt-3">@ViewBag.ErrorMessage</div>
+            }
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        const passwordInput = document.getElementById("password");
+        const toggleButton = document.getElementById("togglePassword");
+
+        toggleButton.addEventListener("mousedown", function () {
+            passwordInput.type = "text";
+            toggleButton.innerHTML = '<i class="fas fa-eye-slash"></i>';
+        });
+
+        toggleButton.addEventListener("mouseup", function () {
+            passwordInput.type = "password";
+            toggleButton.innerHTML = '<i class="fas fa-eye"></i>';
+        });
+
+        toggleButton.addEventListener("mouseleave", function () {
+            passwordInput.type = "password";
+            toggleButton.innerHTML = '<i class="fas fa-eye"></i>';
+        });
+    });
+</script>
+
+<style>
+    .form-control {
+        border: 2px solid #e4872c;
+    }
+
+    .btn-login {
+        width: 100%;
+        background-color: #07305d;
+        color: white;
+        padding: 12px;
+        border: none;
+        border-radius: 30px;
+        cursor: pointer;
+        font-size: 18px;
+        font-weight: bold;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
+        .btn-login:hover {
+            background-color: #0b488c;
+            transform: scale(1.05);
+        }
+</style>

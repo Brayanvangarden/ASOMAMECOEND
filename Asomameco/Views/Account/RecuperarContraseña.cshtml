@@ -1,0 +1,54 @@
+﻿@{
+    ViewData["Title"] = "Recuperar Contraseña";
+}
+<div style="margin-top:20%">   </div>
+<div class="container mt-5" style="max-width: 500px; margin-bottom:32%">
+    <div class="card shadow-lg border-0">
+        <!-- Cabecera del Card -->
+        <div class="card-header text-white text-center" style="background-color: #07305d;">
+            <h3 class="card-title mb-0">Recuperar Contraseña</h3>
+        </div>
+        <div class="card-body p-4">
+            @if (TempData["MensajeError"] != null)
+            {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    @TempData["MensajeError"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+
+            @if (TempData["MensajeExito"] != null)
+            {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    @TempData["MensajeExito"]
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            }
+            <form action="@Url.Action("RecuperarContraseña", "Account")" method="post">
+                <!-- Campo Correo Electrónico -->
+                <div class="mb-3">
+                    <label for="correo" class="form-label fw-bold">Correo Electrónico</label>
+                    <input  id="correo" name="correo" class="form-control" placeholder="Ingrese su correo">
+                </div>
+
+                <!-- Botón Recuperar Contraseña -->
+                <div class="d-grid gap-2">
+                    <button type="submit" class="btn text-white" style="background-color: #07305d; border-radius: 30px; font-weight: bold; transition: background-color 0.3s ease, transform 0.2s ease;">
+                        Recuperar Contraseña
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-control {
+        border: 2px solid #e4872c;
+    }
+
+    .btn:hover {
+        background-color: #0b488c;
+        transform: scale(1.05);
+    }
+</style>

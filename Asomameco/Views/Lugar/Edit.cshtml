@@ -1,0 +1,163 @@
+﻿@model Asomameco.Application.DTOs.LugarDTO
+
+@{
+    ViewData["Title"] = "Editar Lugar";
+}
+
+<div class="container mt-5 mb-5" style="max-width: 800px; margin: 20px auto;">
+    <div class="card shadow-lg border-0" style="margin-bottom:16%">
+        <div class="card-header text-white d-flex align-items-center" style="background-color: #07305d;">
+            <i class="fas fa-user-edit me-2"></i>
+            <h3 class="card-title mb-0">Editar Lugar</h3>
+        </div>
+        <div class="card-body">
+            <form id="editUserForm" asp-action="Edit" asp-antiforgery="true" enctype="multipart/form-data">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                <div class="row">
+                    <!-- Sección Izquierda -->
+                    <div class="col-md-12">
+                        <!-- Campo ID (Hidden) -->
+                  <div class="mb-3">
+                            <label asp-for="Id" class="form-label fw-bold" readonly>
+                                <i class="fas fa-id-badge me-2"></i>Código
+                            </label>
+                            <input readonly asp-for="Id" id="Id" class="form-control" placeholder="Ingrese la Identificación" style="max-width: 90%;" />
+                            <span asp-validation-for="Id" class="text-danger"></span>
+                        </div>
+
+
+                        <!-- Campo Nombre -->
+                        <div class="mb-3">
+                            <label asp-for="NombreLugar" class="form-label fw-bold">
+                                <i class="fas fa-user me-2"></i>Nombre
+                            </label>
+                            <input asp-for="NombreLugar" id="NombreLugar" class="form-control" placeholder="Ingrese el nombre" style="max-width: 90%;" />
+                            <span asp-validation-for="NombreLugar" class="text-danger"></span>
+                        </div>
+
+
+                        <!-- Campo Direccion Exacta -->
+                        <div class="mb-3">
+                            <label asp-for="DireccionExacta" class="form-label fw-bold">
+                                <i class="fas fa-id-badge me-2"></i>Dirección
+                            </label>
+                            <input asp-for="DireccionExacta" id="DireccionExacta" class="form-control" placeholder="Ingrese la dirección" style="max-width: 90%;" />
+                            <span asp-validation-for="DireccionExacta" class="text-danger"></span>
+                        </div>
+
+                        <!-- Campo Estado -->
+                     
+                            <div class="mb-3">
+                                <label class="form-label fw-bold">
+                                    <i class="fas fa-check-square me-2"></i>Estado
+                                </label>
+                                <div class="form-check">
+                                    <input type="radio" class="form-check-input" id="EstadoActivo" name="Estado" value="true" @(ViewBag.EstadoActual == true ? "checked" : "") />
+                                    <label class="form-check-label" for="EstadoActivo">Activo</label>
+                                </div>
+                                <div class="form-check">
+                                    <input type="radio" class="form-check-input" id="EstadoInactivo" name="Estado" value="false" @(ViewBag.EstadoActual == false ? "checked" : "") />
+                                    <label class="form-check-label" for="EstadoInactivo">Inactivo</label>
+                                </div>
+                            </div>
+
+                    </div>
+                    </div>
+                <!-- Botones -->
+                <div class="d-flex justify-content-between mt-4">
+                    <a asp-action="IndexAdmin" class="btn btn-regresar">
+                        <i class="fas fa-arrow-left me-1"></i>Regresar
+                    </a>
+                    <button type="submit" class="btn btn-pagi">
+                        <i class="fas fa-save me-1"></i>Guardar
+                    </button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.12/jquery.validate.unobtrusive.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+
+            $("#createUserForm").submit(function (e) {
+
+
+
+                if ($('#NombreLugar').val().trim() === "") {
+                    e.preventDefault();
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Validación requerida',
+                        text: 'Debe ingresar un nombre.',
+                        toast: true,
+                        position: 'center',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true
+                    });
+                    return;
+                }
+
+                if ($('#DireccionExacta').val().trim() === "") {
+                    e.preventDefault();
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Validación requerida',
+                        text: 'Debe ingresar la dirección exacta.',
+                        toast: true,
+                        position: 'center',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true
+                    });
+                    return;
+                }
+            });
+        });
+    </script>
+    <style>
+        .btn-regresar {
+            background-color: #07305d;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+            .btn-regresar:hover {
+                background-color: #0b488c;
+                transform: scale(1.05);
+                color: white;
+            }
+
+        .btn-pagi {
+            background-color: #e4872c;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+            .btn-pagi:hover {
+                background-color: #eaa159;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+                transform: scale(1.05);
+            }
+    </style>
+}

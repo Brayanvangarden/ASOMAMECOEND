@@ -1,0 +1,218 @@
+﻿@{
+    ViewData["Title"] = "Mantenimiento de Lugares";
+}
+
+@* Importa los estilos de Bootstrap y FontAwesome *@
+@* Si aún no tienes Bootstrap, puedes agregarlo usando CDN *@
+@* Estilos propios adicionales *@
+@section Styles {
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css" rel="stylesheet" />
+    <style>
+        .table-hover tbody tr:hover {
+            background-color: #f1f1f1;
+        }
+
+        .btn-custom {
+            background-color: #26ade4;
+            color: white;
+            border-radius: 5px;
+            padding: 10px 15px;
+            transition: all 0.3s ease;
+        }
+
+            .btn-custom:hover {
+                background-color: #1d8dc6;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+            }
+
+
+        .btn-warningcustom {
+            background-color: #e4872c;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 10px 15px;
+            transition: all 0.3s ease;
+        }
+
+            .btn-warningcustom:hover {
+                background-color: #eaa159;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+                transform: scale(1.05);
+            }
+
+        .btn-dangercustom {
+            background-color: #e82859;
+            color: white;
+            border: none;
+            border-radius: 25px;
+     
+            padding: 10px 15px;
+            transition: all 0.3s ease;
+        }
+
+            .btn-dangercustom:hover {
+                background-color: #dc3463;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+                transform: scale(1.05);
+            }
+
+
+
+
+
+
+        .table th, .table td {
+            text-align: center;
+        }
+
+        .pagination-container {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+            .pagination-container .btn {
+                margin: 0 5px;
+                padding: 10px 15px;
+            }
+
+        .page-info {
+            font-size: 1.2rem;
+            margin: 0 15px;
+            vertical-align: middle;
+        }
+
+        .btn-pagi {
+            background-color: #07305d;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+            .btn-pagi:hover {
+                background-color: #0b488c;
+                transform: scale(1.05);
+                color: white;
+            }
+    </style>
+}
+
+<div class="container mt-4">
+    <h2 style="margin-top:2%;margin-bottom:2%">@ViewData["Title"]</h2>
+    <a href="@Url.Action("Create", "Lugar")" class="btn btn-pagi" style="margin-bottom:2%">
+        <i class="fas fa-user-plus me-2"></i> Crear Nuevo Lugar
+    </a>
+
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>Código</th>           
+                <th>Nombre</th>
+                <th>Dirección</th>
+                <th>Estado</th>      
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var user in Model)
+            {
+                <tr>
+                    <td>@user.Id</td>
+                    <td>@user.NombreLugar</td>
+                    <td>@user.DireccionExacta</td>
+                    <td>@user.EstadoDescripcion</td>
+                    <td>
+                        <a href="@Url.Action("Edit", "Lugar", new { id = user.Id })" class="btn btn-warningcustom">
+                            <i class="fas fa-edit"></i> Editar
+                        </a>
+                        <a href="javascript:void(0);" onclick="confirmDelete(@user.Id)" class="btn btn-dangercustom">
+                            <i class="fas fa-trash-alt"></i> Eliminar
+                        </a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    <!-- Renderizar botones de paginación -->
+    <div class="pagination-container">
+        @if (Model.HasPreviousPage)
+        {
+            <a href="@Url.Action("IndexAdmin", new { page = Model.PageNumber - 1 })" class="btn btn-pagi">
+                <i class="fas fa-chevron-left"></i> Anterior
+            </a>
+        }
+
+        <span class="page-info">
+            Página @Model.PageNumber de @Model.PageCount
+        </span>
+
+        @if (Model.HasNextPage)
+        {
+            <a href="@Url.Action("IndexAdmin", new { page = Model.PageNumber + 1 })" class="btn btn-pagi">
+                Siguiente <i class="fas fa-chevron-right"></i>
+            </a>
+        }
+    </div>
+</div>
+<div style="margin-top:8%"></div>
+
+@section Scripts {
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script>
+        function confirmDelete(Id) {
+            Swal.fire({
+                title: '¿Estás seguro?',
+                text: "¡Vas a eliminar un Lugar!",
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar'
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    var form = document.createElement("form");
+                    form.method = "post";
+                    form.action = "@Url.Action("Delete", "Lugar")";
+                    var input = document.createElement("input");
+                    input.type = "hidden";
+                    input.name = "id";
+                    input.value = Id;
+                    form.appendChild(input);
+                    document.body.appendChild(form);
+                    form.submit();
+
+                    // Mostrar el toast alert
+                    showToast('Lugar eliminado con éxito', 'success');
+                }
+            });
+        }
+
+        // Función para mostrar el toast
+        function showToast(message, type) {
+            const toast = document.createElement('div');
+            toast.classList.add('toast', `toast-${type}`, 'fade');
+            toast.setAttribute('role', 'alert');
+            toast.setAttribute('aria-live', 'assertive');
+            toast.setAttribute('aria-atomic', 'true');
+            toast.innerHTML = `
+                        <div class="toast-body">
+                            ${message}
+                        </div>
+                    `;
+            document.body.appendChild(toast);
+
+            // Activar el toast
+            $(toast).toast({ delay: 3000 });
+            $(toast).toast('show');
+        }
+    </script>
+}

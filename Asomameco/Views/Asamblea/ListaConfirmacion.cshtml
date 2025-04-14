@@ -1,0 +1,95 @@
+﻿@model IEnumerable<Asomameco.Web.Models.ConfirmacionAsistenciaViewModel>
+
+@{
+    ViewData["Title"] = "Confirmaciones de Asistencia";
+}
+
+<div class="container mt-4">
+    <div class="card shadow-lg p-4">
+        <div class="card-header text-center" style="background-color: #07305d; color: white;">
+            <h3 class="mb-0">Asistencia Confirmada</h3>
+        </div>
+
+        <div class="card-body">
+            <!-- Buscador -->
+            <div class="mb-3">
+                <input type="text" id="searchInput" class="form-control" placeholder="Buscar por nombre o ID..." />
+            </div>
+
+            <!-- Tabla -->
+            <div class="table-responsive">
+                <table class="table table-hover text-center" id="confirmacionTable">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ID Miembro</th>
+                            <th>Nombre Miembro</th>
+                            <th>ID Asamblea</th>
+                            <th>Fecha Asamblea</th>
+                            <th>Confirmación</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model)
+                        {
+                            <tr>
+                                <td>@item.IdMiembro</td>
+                                <td>@item.Nombre</td>
+                                <td>@item.IdAsamblea</td>
+                                <td>@item.FechaAsamblea.ToString("dd/MM/yyyy HH:mm")</td>
+                                <td>@item.FechaConfirmacion.ToString("dd/MM/yyyy HH:mm")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+        @*     <!-- Botón de regreso -->
+            <div class="text-center mt-4">
+                <a asp-controller="Asamblea" asp-action="Index" class="btn btn-lg btn-back">
+                    <i class="fas fa-arrow-left"></i> Volver
+                </a>
+            </div> *@
+        </div>
+    </div>
+</div>
+
+<!-- Script de Búsqueda -->
+<script>
+    document.getElementById("searchInput").addEventListener("keyup", function () {
+        let filter = this.value.toLowerCase();
+        let rows = document.querySelectorAll("#confirmacionTable tbody tr");
+
+        rows.forEach(row => {
+            let text = row.textContent.toLowerCase();
+            row.style.display = text.includes(filter) ? "" : "none";
+        });
+    });
+</script>
+
+<!-- Estilos Personalizados -->
+<style>
+    .table thead {
+        background-color: #e4872c !important;
+        color: white;
+    }
+
+    .table-hover tbody tr:hover {
+        background-color: #f8f9fa;
+        transition: background 0.3s ease-in-out;
+    }
+
+    .btn-back {
+        background-color: #07305d;
+        color: white;
+        padding: 10px 20px;
+        border-radius: 30px;
+        font-size: 18px;
+        font-weight: bold;
+        transition: all 0.3s ease;
+    }
+
+        .btn-back:hover {
+            background-color: #0b488c;
+            transform: scale(1.05);
+        }
+</style>

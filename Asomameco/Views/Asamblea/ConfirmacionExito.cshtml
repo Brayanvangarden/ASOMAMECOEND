@@ -1,0 +1,42 @@
+﻿@{
+    ViewData["Title"] = "Confirmación Exitosa";
+}
+<div style="margin-top:15%;margin-bottom:15%">
+<div class="container text-center mt-5">
+    <div class="alert alert-success" role="alert">
+     
+        <h2>¡Confirmación Exitosa!</h2>
+        <p>@ViewBag.Message</p>
+        <p>Nos alegra mucho contar con tu participación. ¡Te esperamos en la Asamblea!</p>
+        </div>
+    </div>
+
+    <div style="text-align:center">
+        <a href="/Home/Index" class="btn btn-primary">
+            Volver al inicio
+        </a>
+        <div style="margin-top:35%;margin-bottom:15%">
+            <br /> 
+        </div>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .alert {
+            background-color: #e4872c;
+            color: white;
+        }
+
+        .btn-primary {
+            background-color: #07305d;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+        }
+
+            .btn-primary:hover {
+                background-color: #0b488c;
+            }
+    </style>
+}

@@ -1,0 +1,185 @@
+﻿@model Asomameco.Application.DTOs.AsambleaDTO
+@{
+    ViewData["Title"] = "Crear Asamblea"; 
+}
+
+<div class="container mt-5 mb-5">
+    <div class="card shadow-lg border-0" style="margin-bottom:16%">
+        <div class="card-header text-white d-flex align-items-center" style="background-color: #07305d;">
+            <i class="fas fa-user-plus me-2"></i>
+            <h3 class="card-title mb-0">Crear Nueva Asamblea</h3>
+        </div>
+        <div class="card-body">
+            <form id="createUserForm" asp-action="Create" asp-antiforgery="true" enctype="multipart/form-data">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                <div class="row">
+                    <!-- Sección Izquierda -->
+                    <div class="col-md-6">
+                        <!-- Campo ID -->
+                        <div class="mb-3">
+                            <label asp-for="Id" class="control-label"></label>
+                            <input asp-for="Id" class="form-control" value="@ViewBag.id" readonly /> @*aqui se muestra el viewbag y se deja solamente de lectura*@
+                            <span asp-validation-for="Id" class="text-danger"></span>
+                        </div>
+
+                        <!-- Campo Fecha -->
+                        <div class="mb-3">
+                            <label asp-for="Fecha" class="form-label fw-bold">
+                                <i class="fas fa-calendar-alt me-2"></i> Fecha y Hora
+                            </label>
+                            <input type="datetime-local" asp-for="Fecha" id="Fecha" class="form-control" style="max-width: 90%;" />
+                            <span asp-validation-for="Fecha" class="text-danger"></span>
+                        </div>
+
+
+
+                        <!-- Campo Descripcion | este campo es opcional -->
+                        <div class="mb-3">
+                            <label asp-for="Descripcion" class="form-label fw-bold">
+                                <i class="fas fa-user me-2"></i>Descripción
+                            </label>
+                            <input asp-for="Descripcion" id="Descripcion" class="form-control"
+                                   placeholder="Ingrese una descripción" style="max-width: 90%;" data-val="false" />
+                        </div>
+
+                        <!-- Campo Lugar -->
+                        <div class="mb-3">
+                            <label asp-for="Lugar" class="form-label fw-bold">
+                                <i class="fas fa-user-shield me-2"></i>Lugar
+                            </label>
+                            @Html.DropDownListFor(model => model.Lugar,
+                                     new SelectList(ViewBag.ListLugares, "Id", "NombreLugar"),
+                                     "Seleccione un lugar",
+                                     new { @class = "form-select", id = "Lugar" })
+                        </div>
+ 
+
+           
+                </div>
+                </div>
+
+                <!-- Botones -->
+                <div class="d-flex justify-content-between mt-4">
+                    <a asp-action="IndexAdmin" class="btn btn-regresar">
+                        <i class="fas fa-arrow-left me-1"></i>Regresar
+                    </a>
+                    <button type="submit" class="btn btn-pagi" >
+                        <i class="fas fa-save me-1"></i>Guardar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.12/jquery.validate.unobtrusive.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            $("#createUserForm").submit(function (e) { // Captura el evento submit
+                if ($('#Id').val().trim() === "") {
+                    e.preventDefault();
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Validación requerida',
+                        text: 'Debe ingresar un ID.',
+                        toast: true,
+                        position: 'center',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true
+                    });
+                    return;
+                }
+
+                if ($('#Fecha').val().trim() === "") {
+                    e.preventDefault();
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Validación requerida',
+                        text: 'Debe ingresar una Fecha.',
+                        toast: true,
+                        position: 'center',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true
+                    });
+                    return;
+                }
+
+                if ($('#Estado').val() === "0") {
+                    e.preventDefault();
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Validación requerida',
+                        text: 'Debe seleccionar un estado de Asamblea.',
+                        toast: true,
+                        position: 'center',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true
+                    });
+                    return;
+                }
+
+                   if ($('#Lugar').val() === "0") {
+                  e.preventDefault();
+                  Swal.fire({
+                      icon: 'warning',
+                      title: 'Validación requerida',
+                      text: 'Debe seleccionar un lugar de Asamblea.',
+                      toast: true,
+                      position: 'center',
+                      showConfirmButton: false,
+                      timer: 3000,
+                      timerProgressBar: true
+                  });
+                  return;
+              }
+
+            });
+        });
+    </script>
+
+    <style>
+        .btn-regresar {
+            background-color: #07305d;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .btn-regresar:hover {
+                background-color: #0b488c;
+                transform: scale(1.05);
+                color: white;
+            }
+
+        .btn-pagi {
+            background-color: #e4872c;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+        .btn-pagi:hover {
+                background-color: #eaa159;
+                box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+                transform: scale(1.05);
+            }
+    </style>
+}

@@ -1,0 +1,36 @@
+﻿@{
+    ViewData["Title"] = "Error";
+}
+
+<div class="container text-center mt-5">
+    <div class="alert alert-danger" role="alert">
+        <h2>Error</h2>
+        <p>@ViewBag.ErrorMessage</p>
+    </div>
+
+    <div>
+        <a href="/Home/Index" class="btn btn-danger">
+            Volver al inicio
+        </a>
+    </div>
+</div>
+
+@section Styles {
+    <style>
+        .alert-danger {
+            background-color: #f8d7da;
+            color: #721c24;
+        }
+
+        .btn-danger {
+            background-color: #dc3545;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 5px;
+        }
+
+            .btn-danger:hover {
+                background-color: #c82333;
+            }
+    </style>
+}

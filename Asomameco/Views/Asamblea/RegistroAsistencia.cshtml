@@ -1,0 +1,202 @@
+﻿@model Asomameco.Application.DTOs.ConfirmacionDTO
+
+@{
+    ViewData["Title"] = "Registrar Asistencia";
+}
+
+<div class="container mt-5 mb-5">
+    <div class="card shadow-lg border-0" style="margin-bottom: 10%">
+        <div class="card-header text-white d-flex align-items-center" style="background-color: #07305d;">
+            <i class="fas fa-qrcode me-2"></i>
+            <h3 class="card-title mb-0">Registro de Asistencia</h3>
+        </div>
+        <div class="card-body">
+            <form id="registroAsistenciaForm" asp-action="RegistrarAsistencia" asp-controller="Asamblea" method="post">
+                <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                <!-- Escaneo QR -->
+                <div class="text-center">
+                    <video id="preview" class="border rounded" style="width: 100%; max-width: 400px;"></video>
+                    <button type="button" id="scanQR" class="btn btn-qr mt-3">
+                        <i class="fas fa-qrcode me-1"></i> Escanear QR
+                    </button>
+                </div>
+
+                <hr class="my-4">
+
+                <!-- Ingreso Manual -->
+                <div class="mb-3">
+                    <label asp-for="IdMiembro" class="form-label fw-bold">
+                        <i class="fas fa-id-card me-2"></i> Identificación del Asociado
+                    </label>
+                    <input type="text" asp-for="IdMiembro" id="IdMiembro" class="form-control" style="max-width: 90%;" />
+      
+                </div>
+
+                <!-- Campo Tipo de Usuario -->
+                <div class="mb-3">
+                    <label asp-for="IdAsamblea" class="form-label fw-bold">
+                        <i class="fas fa-user-shield me-2"></i>Asamblea
+                    </label>
+                    @Html.DropDownListFor(model => model.IdAsamblea,
+                             new SelectList(ViewBag.ListAsamblea, "Id", "Fecha"),
+                             "Seleccione una asamblea",
+                             new { @class = "form-select", id = "Fecha" })
+                </div>
+
+                <!-- Botón de Envío -->
+                <div class="d-flex justify-content-between mt-4">
+                
+                    <button type="submit" class="btn btn-pagi">
+                        <i class="fas fa-save me-1"></i> Registrar Asistencia
+                    </button>
+                </div>
+            </form>
+
+            @if (!string.IsNullOrEmpty(ViewBag.ErrorMessage))
+            {
+                <div class="alert alert-danger mt-3">@ViewBag.ErrorMessage</div>
+            }
+        </div>
+    </div>
+</div>
+
+@{
+    ViewData["Title"] = "Registrar Asistencia";
+
+    var listaAsambleasVacia = ViewBag.ListAsamblea == null || (ViewBag.ListAsamblea as List<Asomameco.Application.DTOs.AsambleaDTO>)?.Count == 0;
+}
+
+@section Scripts {
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.12/jquery.validate.unobtrusive.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://rawgit.com/schmich/instascan-builds/master/instascan.min.js"></script>
+
+    <script>
+        $(document).ready(function () {
+            let scanner = new Instascan.Scanner({ video: document.getElementById('preview') });
+
+            $("#scanQR").click(function () {
+                Swal.fire({
+                    title: 'Escaneando...',
+                    text: 'Apunta el código QR con tu cámara',
+                    icon: 'info',
+                    toast: true,
+                    position: 'top',
+                    showConfirmButton: false,
+                    timer: 3000,
+                    timerProgressBar: true
+                });
+
+                Instascan.Camera.getCameras().then(function (cameras) {
+                    if (cameras.length > 0) {
+                        scanner.start(cameras[0]);
+                    } else {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'No se encontró cámara',
+                            text: 'Por favor, asegúrate de que tienes una cámara disponible.'
+                        });
+                    }
+                }).catch(function (e) {
+                    console.error(e);
+                });
+            });
+
+            scanner.addListener('scan', function (content) {
+                $("#IdMiembro").val(content);
+                scanner.stop();
+                Swal.fire({
+                    icon: 'success',
+                    title: 'Código QR detectado',
+                    text: 'Asociado identificado correctamente.',
+                    timer: 2000,
+                    toast: true,
+                    position: 'top',
+                    showConfirmButton: false
+                });
+            });
+
+            // Verificar si ViewBag.ListAsamblea tiene datos
+            var listaAsambleasVacia = @(listaAsambleasVacia.ToString().ToLower()); // Transferir el valor booleano del servidor al cliente
+
+            if (listaAsambleasVacia) {
+                Swal.fire({
+                    icon: 'info',
+                    title: 'Sin Asambleas',
+                    text: 'No hay asambleas programadas para el día de hoy.',
+                    toast: true,
+                    position: 'center',
+                    showConfirmButton: false,
+                    timer: 5000,
+                    timerProgressBar: true
+                });
+            }
+
+            $("#registroAsistenciaForm").submit(function (e) {
+                if ($('#IdMiembro').val().trim() === "") {
+                    e.preventDefault();
+                    Swal.fire({
+                        icon: 'warning',
+                        title: 'Validación requerida',
+                        text: 'Debe ingresar una identificación.',
+                        toast: true,
+                        position: 'center',
+                        showConfirmButton: false,
+                        timer: 3000,
+                        timerProgressBar: true
+                    });
+                    return;
+                }
+            });
+        });
+
+        // Validación de ID duplicado
+        $("#IdMiembro").on("blur", function () {
+            var idIngresado = $(this).val();
+            if (idIngresado) {
+                $.get("/Usuario/VerificarIdExiste", { id: idIngresado }, function (data) {
+                    if (!data) {
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Usuario Inexistente',
+                            text: 'El ID ingresado no existe. Por favor, elija un Id válido.',
+                            toast: true,
+                            position: 'center',
+                            showConfirmButton: false,
+                            timer: 3000,
+                            timerProgressBar: true
+                        });
+
+                        $("#IdMiembro").addClass("is-invalid");
+                    } else {
+                        $("#IdMiembro").removeClass("is-invalid");
+                    }
+                });
+            }
+        });
+
+
+    </script>
+
+    <style>
+        .btn-qr {
+            background-color: #0b488c;
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 30px;
+            cursor: pointer;
+            font-size: 16px;
+            font-weight: bold;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+        }
+
+            .btn-qr:hover {
+                background-color: #07305d;
+                transform: scale(1.05);
+            }
+    </style>
+}

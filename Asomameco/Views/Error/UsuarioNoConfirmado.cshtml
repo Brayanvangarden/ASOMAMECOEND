@@ -1,0 +1,45 @@
+﻿@{
+    ViewData["Title"] = "Usuario no confirmado";
+}
+
+<div class="container d-flex justify-content-center align-items-center" style="min-height: 100vh;">
+    <div class="row shadow-lg p-5 rounded text-center" style="width: 800px; background-color: white;">
+        <!-- Columna izquierda: Imagen -->
+        <div class="col-md-6 d-flex flex-column align-items-center justify-content-center">
+            <img src="~/images/CaritaTriste.svg" alt="Error UsuarioNoConfirmado" class="img-fluid" style="max-width: 300px;" />
+        </div>
+
+        <!-- Divisor vertical -->
+        <div class="col-md-1 d-flex align-items-center justify-content-center">
+            <div style="width: 1px; height: 100%; background-color: #e4872c;"></div>
+        </div>
+
+        <!-- Columna derecha: Mensaje -->
+        <div class="col-md-5">
+            <h2 class="mb-3 text-center" style="color: #07305d; font-weight: bold;">Oops... usuario no confirmado para asistir a la asamblea</h2>
+            <p style="color: #333;">El usuario solo puede registrar su asistencia si primero ha confirmado su participación a la asamblea.</p>
+            <a asp-controller="Asamblea" asp-action="RegistroAsistencia" class="btn-return">Volver</a>
+        </div>
+    </div>
+</div>
+
+<style>
+    .btn-return {
+        display: inline-block;
+        background-color: #07305d;
+        color: white;
+        padding: 12px 24px;
+        border: none;
+        border-radius: 30px;
+        cursor: pointer;
+        font-size: 18px;
+        font-weight: bold;
+        text-decoration: none;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
+        .btn-return:hover {
+            background-color: #0b488c;
+            transform: scale(1.05);
+        }
+</style>

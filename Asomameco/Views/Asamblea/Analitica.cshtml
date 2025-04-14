@@ -1,0 +1,100 @@
+﻿@model List<Asomameco.Web.Models.AsambleaAnaliticaViewModel>
+@{
+    ViewData["Title"] = "Analítica de Asambleas";
+}
+
+<div class="container mt-5">
+    <h2 class="text-center" style="color: #07305d;">📊 Estadísticas de asambleas</h2>
+
+    <div class="row mt-4">
+        <!-- Gráfico de Barras -->
+        <div class="col-md-6">
+            <canvas id="barChart"></canvas>
+        </div>
+
+        <!-- Gráfico de Pastel -->
+        <div class="col-md-6">
+            <canvas id="pieChart"></canvas>
+        </div>
+    </div>
+
+    <div class="row mt-4">
+        <!-- Gráfico de Línea -->
+        <div class="col-md-12">
+            <canvas id="lineChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        // Datos obtenidos de la vista
+        const nombresAsambleas = @Html.Raw(Json.Serialize(Model.Select(a => a.NombreAsamblea)));
+        const invitados = @Html.Raw(Json.Serialize(Model.Select(a => a.TotalInvitados)));
+        const confirmados = @Html.Raw(Json.Serialize(Model.Select(a => a.TotalConfirmados)));
+        const asistentes = @Html.Raw(Json.Serialize(Model.Select(a => a.TotalAsistentes)));
+
+        // Colores
+        const colors = ['#e4872c', '#07305d', '#0b488c'];
+
+        // Gráfico de Barras
+        new Chart(document.getElementById('barChart'), {
+            type: 'bar',
+            data: {
+                labels: nombresAsambleas,
+                datasets: [
+                    { label: 'Invitados', data: invitados, backgroundColor: colors[0] },
+                    { label: 'Confirmados', data: confirmados, backgroundColor: colors[1] },
+                    { label: 'Asistentes', data: asistentes, backgroundColor: colors[2] }
+                ]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'top' }
+                }
+            }
+        });
+
+        // Gráfico de Pastel (Distribución de asistencia)
+        new Chart(document.getElementById('pieChart'), {
+            type: 'pie',
+            data: {
+                labels: ['Confirmados', 'No Confirmados'],
+                datasets: [{
+                    data: [
+                        confirmados.reduce((a, b) => a + b, 0),
+                        invitados.reduce((a, b) => a + b, 0) - confirmados.reduce((a, b) => a + b, 0)
+                    ],
+                    backgroundColor: [colors[1], '#cccccc']
+                }]
+            },
+            options: { responsive: true }
+        });
+
+        // Gráfico de Línea (Tendencia de asistencia)
+        new Chart(document.getElementById('lineChart'), {
+            type: 'line',
+            data: {
+                labels: nombresAsambleas,
+                datasets: [{
+                    label: 'Tasa de Asistencia (%)',
+                    data: asistentes.map((value, index) => (value / invitados[index]) * 100),
+                    backgroundColor: colors[2],
+                    borderColor: colors[2],
+                    fill: false
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'top' }
+                },
+                scales: {
+                    y: { beginAtZero: true, max: 100 }
+                }
+            }
+        });
+    });
+</script>
