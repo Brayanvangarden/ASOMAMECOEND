@@ -14,6 +14,7 @@ using SkiaSharp;
 using Org.BouncyCastle.Cmp;
 using Asomameco.Web.Models;
 using Microsoft.IdentityModel.Tokens;
+using System.Linq;
 
 namespace Asomameco.Web.Controllers
 {
@@ -30,9 +31,9 @@ namespace Asomameco.Web.Controllers
         private readonly QrService _qrService;
         private readonly AsomamecoContext context;
 
-        public AsambleaController(IServiceAsamblea serviceAsamblea, IServiceAsistencia serviceAsistencia, 
-            IServiceConfirmacion serviceConfirmacion,  IServiceEstadoAsamblea serviceEstadoAsamblea, 
-            AsomamecoContext _context, EmailService emailService, QrService qrService, 
+        public AsambleaController(IServiceAsamblea serviceAsamblea, IServiceAsistencia serviceAsistencia,
+            IServiceConfirmacion serviceConfirmacion, IServiceEstadoAsamblea serviceEstadoAsamblea,
+            AsomamecoContext _context, EmailService emailService, QrService qrService,
             IServiceUsuario serviceUsuario, IServiceLugar serviceLugar)
         {
             _serviceAsamblea = serviceAsamblea;
@@ -60,7 +61,7 @@ namespace Asomameco.Web.Controllers
         {
             try
             {
-            
+
                 var @object = await _serviceAsamblea.FindByIdAsync(id);
                 if (@object == null)
                 {
@@ -86,13 +87,14 @@ namespace Asomameco.Web.Controllers
         {
             var consecutivo = await context.Asamblea.OrderByDescending(x => x.Id).FirstOrDefaultAsync();
             ViewBag.id = consecutivo?.Id + 1 ?? 1;
+            ViewBag.Usuarios = await context.Usuario.ToListAsync();
 
             // Obtener todos lugares
             var allLugares = await _serviceLugar.ListAsync();
 
             // Filtrar los lugares 
             var allLugaresFiltrados = allLugares
-                .Where(tu => tu.Estado == true) 
+                .Where(tu => tu.Estado == true)
                 .ToList();
 
             // Asignar los lugares filtrados al ViewBag
@@ -109,7 +111,7 @@ namespace Asomameco.Web.Controllers
         [HttpGet]
         public async Task<IActionResult> RegistroAsistenciaAsync()
         {
-           //Obtener todos los lugares
+            //Obtener todos los lugares
             var lugares = await _serviceLugar.ListAsync();
             var lugaresFiltrados = lugares?
                .Where(lf => lf.Estado == true)  // Filtrar por lugares con estado = true
@@ -120,11 +122,16 @@ namespace Asomameco.Web.Controllers
                .ToList();
 
             // Obtener todos los tipos de usuario
-            var hoy = DateTime.Now.Date; // Obtener la fecha de hoy sin la hora
-            var asambleas =  await _serviceAsamblea.ListAsync();
+            var asambleas = await _serviceAsamblea.ListAsync();
             var asambleasFiltradas = asambleas?
-         .Where(asa => asa.Estado == 1 && asa.Fecha.Date == hoy)
-         .ToList();
+                .Where(asa => asa.Estado == 1)  // Filtrar por Estado = 1
+                .OrderBy(asa => asa.Fecha)       // Ordenar de más vieja a más reciente
+                .Select(asa => new
+                {
+                    asa.Id,
+                    Fecha = asa.Fecha.ToString("dd/MMMM/yyyy HH:mm") // Convertir Fecha a string
+                })
+                .ToList();
 
             // Asignar los tipos de usuario filtrados al ViewBag
             ViewBag.ListAsamblea = asambleasFiltradas;
@@ -134,7 +141,7 @@ namespace Asomameco.Web.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult>  RegistrarAsistencia(AsistenciaDTO model)
+        public async Task<IActionResult> RegistrarAsistencia(AsistenciaDTO model)
         {
 
 
@@ -155,11 +162,11 @@ namespace Asomameco.Web.Controllers
 
                         model.IdMiembro = model.IdMiembro;
                         model.IdAsamblea = model.IdAsamblea;
-            
+
                         model.FechaHoraLlegada = DateTime.Now;
 
 
-                       await _serviceAsamblea.ConfirmAttendance(model);
+                        await _serviceAsamblea.ConfirmAttendance(model);
                         TempData["Mensaje"] = "Asistencia registrada correctamente";
                         return RedirectToAction("RegistroAsistencia");
                     }
@@ -224,27 +231,21 @@ namespace Asomameco.Web.Controllers
 
 
         [Authorize]
-        // POST: AsambleaController/Create
         [HttpPost]
-
-        public async Task<ActionResult> Create(AsambleaDTO dto)
+        public async Task<ActionResult> Create(AsambleaDTO dto, List<string> selectedUsers)
         {
-
             try
             {
-
-
-                //Validación del formulario
                 if (!ModelState.IsValid)
                 {
-                    // Lee del ModelState todos los errores que
-                    // vienen para el lado del server
                     string errors = string.Join("; ", ModelState.Values
-                                       .SelectMany(x => x.Errors)
-                                       .Select(x => x.ErrorMessage));
+                                   .SelectMany(x => x.Errors)
+                                   .Select(x => x.ErrorMessage));
                     ViewBag.ErrorMessage = errors;
                     return View();
                 }
+
+
 
                 dto.Estado = 1;
                 if (dto.Descripcion.IsNullOrEmpty())
@@ -252,38 +253,44 @@ namespace Asomameco.Web.Controllers
                     dto.Descripcion = "";
                 }
 
-                //Crear
+                // Crear asamblea
                 await _serviceAsamblea.AddAsync(dto);
 
-
-                //Enviar correo de notificacion a todos los usuarios de que hay una nueva asamblea creada
-                var usuarios = context.Usuario.ToList();
+                // Obtener lugar
                 var lugar = await context.Lugar.FindAsync(dto.Lugar);
 
-                foreach (var usuario in usuarios)
+                var selectedUserIds = selectedUsers?.Select(int.Parse).ToList() ?? new List<int>();
+
+                // Si no se seleccionaron usuarios específicos, enviar a todos
+                var usuarios = selectedUserIds.Any()
+                   ? await context.Usuario.Where(u => selectedUserIds.Contains(u.Id)).ToListAsync()
+                   : await context.Usuario.ToListAsync();
+
+                if (selectedUserIds != null)
                 {
+                    foreach (var usuario in usuarios)
+                    {
+                        string urlConfirmacion = $"https://localhost:7282/Asamblea/Confirmar?id={usuario.Id}&idAsamblea={dto.Id}";
 
-                    string urlConfirmacion = $"https://localhost:7282/Asamblea/Confirmar?id={usuario.Id}&idAsamblea={dto.Id}";
+                        string mensaje = $@"
+                <h2>Notificación de Asamblea</h2>
+                <p>Se ha programado una nueva asamblea para el <strong>{dto.Fecha.ToShortDateString()}
+                </strong> a las <strong>{dto.Fecha.Hour}</strong>:<strong>{dto.Fecha.Minute}</strong>.</p>
+                <p><strong>{dto.Descripcion}</strong></p>
+                <p>Lugar asignado: <strong>{lugar.NombreLugar}</strong></p>
+                <p>Dirección: <strong>{lugar.DireccionExacta}</strong></p> </p>
+                <p>Por favor, confirma tu asistencia haciendo clic en el botón de abajo:</p>
+                <a href='{urlConfirmacion}' 
+                    style='background-color: #28a745; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px;'>
+                    Sí, Confirmo
+                </a>
+                <p>Si no puedes asistir, no es necesario hacer nada.</p>";
 
-                  
-
-                    string mensaje = $@"
-            <h2>Notificación de Asamblea</h2>
-            <p>Se ha programado una nueva asamblea para el <strong>{dto.Fecha.ToShortDateString()}
-            </strong> a las <strong>{dto.Fecha.Hour}</strong>:<strong>{dto.Fecha.Minute}</strong>.</p>
-            <p><strong>{dto.Descripcion}</strong></p>
-            <p>Lugar asignado: <strong>{lugar.NombreLugar}</strong></p>
-            <p>Direcci&oacute;n: <strong>{lugar.DireccionExacta}</strong></p> </p>
-            <p>Por favor, confirma tu asistencia haciendo clic en el botón de abajo:</p>
-            <a href='{urlConfirmacion}' 
-                style='background-color: #28a745; color: white; padding: 10px 15px; text-decoration: none; border-radius: 5px;'>
-                Sí, Confirmo
-            </a>
-            <p>Si no puedes asistir, no es necesario hacer nada.</p>";
-
-                    await _emailService.EnviarCorreoAsync(usuario.Correo, "Confirmación de Asamblea", mensaje);
-
-
+                        await _emailService.EnviarCorreoAsync(usuario.Correo, "Confirmación de Asamblea", mensaje);
+                    }
+                }
+                else
+                {
 
                 }
                 return RedirectToAction("IndexAdmin");
@@ -291,7 +298,7 @@ namespace Asomameco.Web.Controllers
             catch (Exception ex)
             {
                 var innerException = ex.InnerException?.Message ?? ex.Message;
-                ViewBag.ErrorMessage = $"Error al guardar el Asamblea: {innerException}";  
+                ViewBag.ErrorMessage = $"Error al guardar el Asamblea: {innerException}";
                 return View(dto);
             }
         }
@@ -324,7 +331,7 @@ namespace Asomameco.Web.Controllers
             ConfirmacionDTO confirmacion = new ConfirmacionDTO();
 
             confirmacion.IdMiembro = id;
-            confirmacion.IdAsamblea= idAsamblea;
+            confirmacion.IdAsamblea = idAsamblea;
             confirmacion.Metodo = 0;
             confirmacion.FechaConfirmacion = DateTime.Now;
 
@@ -333,7 +340,7 @@ namespace Asomameco.Web.Controllers
 
             // Enviar el correo con el archivo QR adjunto
             await _emailService.EnviarCorreoConAdjuntoAsync(usuario.Correo, "Asistencia Confirmada", mensaje, qrCodePath);
-        
+
 
 
             // Intentar eliminar el archivo QR de manera segura, reintentando si está en uso
@@ -368,7 +375,7 @@ namespace Asomameco.Web.Controllers
             catch (Exception ex)
             {
                 // Log el error si ocurre alguna excepción al eliminar el archivo
-               return Content($"Error al eliminar el archivo QR: {ex.Message}");
+                return Content($"Error al eliminar el archivo QR: {ex.Message}");
             }
 
             // Redirigir a la vista de confirmación exitosa
@@ -414,14 +421,14 @@ namespace Asomameco.Web.Controllers
 
             // Filtrar los lugares activos
             var LugaresFiltrados = allLugares
-                .Where(lu => lu.Estado == true) 
+                .Where(lu => lu.Estado == true)
                 .ToList();
 
             // Asignar los lugares de Asamblea filtrados al ViewBag
             ViewBag.ListLugares = LugaresFiltrados;
             ViewBag.Id = @object.Id;
             // Enviar el lugar
-            ViewBag.SelectedLugar = @object.LugarNavigation.Id; 
+            ViewBag.SelectedLugar = @object.LugarNavigation.Id;
 
 
             // Obtener todos los Estados de Asamblea
@@ -451,11 +458,11 @@ namespace Asomameco.Web.Controllers
             try
             {
                 // Obtener el Asamblea actual de la base de datos
-                var AsambleaActual = await _serviceAsamblea.FindByIdAsync(id);             
-          
+                var AsambleaActual = await _serviceAsamblea.FindByIdAsync(id);
+
                 await _serviceAsamblea.UpdateAsync(id, dto);
 
-         
+
 
 
                 //Enviar correo de notificacion a todos los usuarios de que hay una nueva asamblea creada

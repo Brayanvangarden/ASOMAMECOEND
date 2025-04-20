@@ -1,6 +1,7 @@
-﻿@model Asomameco.Application.DTOs.AsambleaDTO
+﻿@using Asomameco.Models  <!-- Reemplaza con el namespace correcto de tu clase Usuario -->
+@model Asomameco.Application.DTOs.AsambleaDTO
 @{
-    ViewData["Title"] = "Crear Asamblea"; 
+    ViewData["Title"] = "Crear Asamblea";
 }
 
 <div class="container mt-5 mb-5">
@@ -19,7 +20,7 @@
                         <!-- Campo ID -->
                         <div class="mb-3">
                             <label asp-for="Id" class="control-label"></label>
-                            <input asp-for="Id" class="form-control" value="@ViewBag.id" readonly /> @*aqui se muestra el viewbag y se deja solamente de lectura*@
+                            <input asp-for="Id" class="form-control" value="@ViewBag.id" readonly />
                             <span asp-validation-for="Id" class="text-danger"></span>
                         </div>
 
@@ -32,15 +33,13 @@
                             <span asp-validation-for="Fecha" class="text-danger"></span>
                         </div>
 
-
-
-                        <!-- Campo Descripcion | este campo es opcional -->
+                        <!-- Campo Descripcion -->
                         <div class="mb-3">
                             <label asp-for="Descripcion" class="form-label fw-bold">
                                 <i class="fas fa-user me-2"></i>Descripción
                             </label>
                             <input asp-for="Descripcion" id="Descripcion" class="form-control"
-                                   placeholder="Ingrese una descripción" style="max-width: 90%;" data-val="false" />
+                                   placeholder="Ingrese una descripción" style="max-width: 90%;" />
                         </div>
 
                         <!-- Campo Lugar -->
@@ -53,10 +52,45 @@
                                      "Seleccione un lugar",
                                      new { @class = "form-select", id = "Lugar" })
                         </div>
- 
+                    </div>
 
-           
-                </div>
+                    <!-- Sección Derecha - Multi-select de Usuarios -->
+                    <div class="col-md-6">
+                        <div class="mb-6">
+                            <label class="form-label fw-bold">
+                                <i class="fas fa-users me-2"></i>Seleccionar Usuarios
+                            </label>
+                            <div class="input-group mb-3">
+                                <input type="text" id="userSearch" class="form-control" placeholder="Buscar usuarios...">
+                                <button class="btn btn-outline-secondary" type="button" id="clearSearch">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                            <div class="form-control p-4" style="height: 300px; overflow-y: auto;">
+                                <div class="list-group" id="userList">
+                                    @foreach (var user in ViewBag.Usuarios as IEnumerable<Asomameco.Infraestructure.Models.Usuario>)
+                                    {
+                                        <label class="list-group-item">
+                                            <input class="form-check-input me-2 user-checkbox"
+                                                   type="checkbox"
+                                                   name="selectedUsers"
+                                                   value="@user.Id"
+                                                   checked>
+                                            @user.Nombre @user.Apellidos (@user.Correo) <!-- Cambiado a Apellidos -->
+                                        </label>
+                                    }
+                                </div>
+                            </div>
+                            <div class="d-flex justify-content-between mt-2">
+                                <button type="button" class="btn btn-sm btn-outline-primary" id="selectAll">
+                                    <i class="fas fa-check-circle me-1"></i>Seleccionar todos
+                                </button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary" id="deselectAll">
+                                    <i class="fas fa-times-circle me-1"></i>Deseleccionar todos
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
 
                 <!-- Botones -->
@@ -64,7 +98,7 @@
                     <a asp-action="IndexAdmin" class="btn btn-regresar">
                         <i class="fas fa-arrow-left me-1"></i>Regresar
                     </a>
-                    <button type="submit" class="btn btn-pagi" >
+                    <button type="submit" class="btn btn-pagi">
                         <i class="fas fa-save me-1"></i>Guardar
                     </button>
                 </div>
@@ -77,10 +111,38 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.6.0/jquery.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validate/1.19.5/jquery.validate.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery-validation-unobtrusive/3.2.12/jquery.validate.unobtrusive.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     <script>
         $(document).ready(function () {
-            $("#createUserForm").submit(function (e) { // Captura el evento submit
+            // Función de búsqueda
+            $('#userSearch').on('keyup', function() {
+                var searchText = $(this).val().toLowerCase();
+                $('#userList label').filter(function() {
+                    var userText = $(this).text().toLowerCase();
+                    $(this).toggle(userText.includes(searchText));
+                });
+            });
+
+            // Limpiar búsqueda
+            $('#clearSearch').click(function() {
+                $('#userSearch').val('');
+                $('#userList label').show();
+            });
+
+            // Seleccionar todos
+            $('#selectAll').click(function() {
+                $('#userList .user-checkbox').prop('checked', true);
+            });
+
+            // Deseleccionar todos
+            $('#deselectAll').click(function() {
+                $('#userList .user-checkbox').prop('checked', false);
+            });
+
+
+            // Validación del formulario
+            $("#createUserForm").submit(function (e) {
                 if ($('#Id').val().trim() === "") {
                     e.preventDefault();
                     Swal.fire({
@@ -111,12 +173,12 @@
                     return;
                 }
 
-                if ($('#Estado').val() === "0") {
+                if ($('#Lugar').val() === "") {
                     e.preventDefault();
                     Swal.fire({
                         icon: 'warning',
                         title: 'Validación requerida',
-                        text: 'Debe seleccionar un estado de Asamblea.',
+                        text: 'Debe seleccionar un lugar de Asamblea.',
                         toast: true,
                         position: 'center',
                         showConfirmButton: false,
@@ -125,24 +187,10 @@
                     });
                     return;
                 }
-
-                   if ($('#Lugar').val() === "0") {
-                  e.preventDefault();
-                  Swal.fire({
-                      icon: 'warning',
-                      title: 'Validación requerida',
-                      text: 'Debe seleccionar un lugar de Asamblea.',
-                      toast: true,
-                      position: 'center',
-                      showConfirmButton: false,
-                      timer: 3000,
-                      timerProgressBar: true
-                  });
-                  return;
-              }
-
             });
         });
+
+
     </script>
 
     <style>
@@ -158,7 +206,7 @@
             transition: background-color 0.3s ease, transform 0.2s ease;
         }
 
-        .btn-regresar:hover {
+            .btn-regresar:hover {
                 background-color: #0b488c;
                 transform: scale(1.05);
                 color: white;
@@ -176,10 +224,35 @@
             transition: background-color 0.3s ease, transform 0.2s ease;
         }
 
-        .btn-pagi:hover {
+            .btn-pagi:hover {
                 background-color: #eaa159;
                 box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
                 transform: scale(1.05);
             }
+
+        /* Estilos para la lista de usuarios */
+        #userList {
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .list-group-item {
+            cursor: pointer;
+            transition: background-color 0.2s;
+            padding-left: 1.35rem;
+            background-color: #ffff99
+        }
+
+            .list-group-item:hover {
+                background-color: #A2A8B2;
+            }
+
+        .form-check-input:checked + .form-checked-content {
+            opacity: .5;
+        }
+
+        .form-check-input-placeholder {
+            border-style: dashed;
+        }
     </style>
 }
